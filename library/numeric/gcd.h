@@ -7,7 +7,7 @@ namespace cpl {
 namespace numeric {
 
 // Computes the greatest comon divisor of two integers.
-// 
+//
 // Assumptions:
 //  - If a >= 0 && b >= 0, then the result is positive.
 //  - If a < 0 || b < 0, then the result can be negative.
@@ -15,7 +15,8 @@ namespace numeric {
 // Complexity:
 //  - Time:  O(log(min(a,b)))
 //  - Space: O(1)
-template <typename T> T gcd(T a, T b) {
+template <typename T>
+T gcd(T a, T b) {
   while (b) {
     a %= b;
     std::swap(a, b);
@@ -23,7 +24,7 @@ template <typename T> T gcd(T a, T b) {
   return a;
 }
 
-} // namespace numeric
-} // namespace cpl
+}  // namespace numeric
+}  // namespace cpl
 
-#endif // LIBRARY_NUMERIC_GCD_H_
+#endif  // LIBRARY_NUMERIC_GCD_H_

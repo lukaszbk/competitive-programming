@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include "library/numeric/gcd.h"
+
+#include <gtest/gtest.h>
 
 namespace cpl {
 namespace numeric {
@@ -29,5 +29,5 @@ TEST(GcdTest, NotCoprime) {
   EXPECT_EQ(18, gcd(18, 36));
 }
 
-} // namespace numeric
-} // namespace cpl
+}  // namespace numeric
+}  // namespace cpl
