@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 namespace cpl {
-namespace numeric {
 
 TEST(GcdTest, Trivial) {
   EXPECT_EQ(1, gcd(1, 123));
@@ -29,5 +28,4 @@ TEST(GcdTest, NotCoprime) {
   EXPECT_EQ(18, gcd(18, 36));
 }
 
-}  // namespace numeric
 }  // namespace cpl

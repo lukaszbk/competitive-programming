@@ -4,9 +4,8 @@
 #include <algorithm>
 
 namespace cpl {
-namespace numeric {
 
-// Computes the greatest comon divisor of two integers.
+// Computes the greatest common divisor of two integers.
 //
 // Assumptions:
 //  - If a >= 0 && b >= 0, then the result is positive.
@@ -24,7 +23,6 @@ T gcd(T a, T b) {
   return a;
 }
 
-}  // namespace numeric
 }  // namespace cpl
 
 #endif  // LIBRARY_NUMERIC_GCD_H_

@@ -12,7 +12,6 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 
 namespace cpl {
-namespace graph {
 
 class EdgesWithoutAttributes : public ::testing::Test {
  protected:
@@ -131,5 +130,4 @@ TEST_F(EdgesWithAttributes, AccessEdge_NotFound) {
   ASSERT_THAT(graph.edge(1, 4), Eq(graph.edges().end()));
 }
 
-}  // namespace graph
 }  // namespace cpl

@@ -6,7 +6,6 @@
 #include <vector>
 
 namespace cpl {
-namespace graph {
 
 struct EmptyVertexAttributes {};
 
@@ -65,7 +64,6 @@ class VertexList {
   int vertex_count_;
 };
 
-}  // namespace graph
 }  // namespace cpl
 
 #endif  // LIBRARY_GRAPH_VERTEX_LIST_H_

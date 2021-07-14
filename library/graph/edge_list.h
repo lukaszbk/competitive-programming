@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace cpl {
-namespace graph {
 
 struct EmptyEdgeAttributes {};
 
@@ -17,10 +16,10 @@ struct EmptyEdgeAttributes {};
 //
 // Template Arguments:
 //  - EdgeAttributes is a struct/class that encapsulates various edge
-//    attributes, like length, weigth, or capacity. The Edge class, which is
+//    attributes, like length, weight, or capacity. The Edge class, which is
 //    used for storage, inherits EdgeAttributes' public interface. By default,
 //    EdgeAttributes is an empty struct.
-//  - EdgeListContainerTmpl spepcifies the container type for storing
+//  - EdgeListContainerTmpl specifies the container type for storing
 //    a collection of graph edges. By default, ContainerTmpl is std::vector.
 //    If you need to remove edges from the graph frequently, use std::list
 //    instead.
@@ -70,7 +69,6 @@ class EdgeList {
   EdgeListContainerTmpl<Edge> edge_list_;
 };
 
-}  // namespace graph
 }  // namespace cpl
 
 #endif  // LIBRARY_GRAPH_EDGE_LIST_H_

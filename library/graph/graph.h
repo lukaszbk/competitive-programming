@@ -4,7 +4,6 @@
 #include "library/graph/vertex_list.h"
 
 namespace cpl {
-namespace graph {
 
 // A Graph contains collections of *directed* edges and vertices.
 //
@@ -70,7 +69,6 @@ class Graph {
   VertexCollection vertex_collection_;
 };
 
-}  // namespace graph
 }  // namespace cpl
 
 #endif  // LIBRARY_GRAPH_GRAPH_H_
