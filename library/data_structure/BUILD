@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 cc_library(
     name = "disjoint_sets",
     hdrs = ["disjoint_sets.h"],

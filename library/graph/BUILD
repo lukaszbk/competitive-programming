@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 cc_library(
     name = "edge_list",
     hdrs = ["edge_list.h"],
@@ -18,6 +20,26 @@ cc_library(
     hdrs = ["graph.h"],
     deps = [
         ":vertex_list",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "minimum_spanning_tree",
+    hdrs = ["minimum_spanning_tree.h"],
+    deps = [
+        "//library/data_structure:disjoint_sets",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "minimum_spanning_tree_test",
+    srcs = ["minimum_spanning_tree_test.cc"],
+    deps = [
+        ":edge_list",
+        ":graph",
+        ":minimum_spanning_tree",
         "@com_google_googletest//:gtest_main",
     ],
 )

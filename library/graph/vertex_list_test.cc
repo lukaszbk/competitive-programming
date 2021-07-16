@@ -11,7 +11,6 @@
 using ::testing::ElementsAre;
 
 namespace cpl {
-namespace graph {
 
 struct V {
   int weight;
@@ -62,5 +61,4 @@ TEST(VertexList, UpdatingVertexCountWorksAsExpected) {
   ASSERT_EQ(0, vertex_list.vertices().size());
 }
 
-}  // namespace graph
 }  // namespace cpl

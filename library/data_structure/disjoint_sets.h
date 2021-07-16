@@ -108,7 +108,7 @@ class DisjointSetsCrtp {
   }
 
   // Returns the size of the subset which the specified element is located.
-  int size(int element) { return std::abs(parent_or_size_[Find(element)]); }
+  int size(int element) { return -parent_or_size_[Find(element)]; }
 
   // Returns the total number of elements in the union of the partition.
   int union_size() const { return parent_or_size_.size(); }
@@ -132,13 +132,17 @@ class DisjointSetsCrtp {
   const bool kEnableMergeBySize_;
   const bool kEnablePathCompression_;
 
+  // If parent_or_size_[a] >= 0, then parent_or_size_[a] represents the parent
+  // of element a in the forest.
+  // If parent_or_size_[a] < 0, then element a is the root of some tree in the
+  // forest and -parent_or_size_[a] represents the size of that tree.
   std::vector<int> parent_or_size_;
 
  private:
   Implementation* hooks() { return static_cast<Implementation*>(this); }
 };
 
-class DisjointSets : public DisjointSetsCrtp<DisjointSets> {
+class DisjointSets final : public DisjointSetsCrtp<DisjointSets> {
  public:
   DisjointSets(int n = 0, bool enable_merge_by_size = true,
                bool enable_path_compression = true)

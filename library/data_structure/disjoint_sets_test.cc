@@ -152,9 +152,7 @@ TEST(DisjointSets, BothOptimizations) {
 TEST(DisjointSets, HooksAreCalledAsExpected) {
   class Partition : public DisjointSetsCrtp<Partition> {
    public:
-    Partition(int n = 0, bool enable_merge_by_size = true,
-              bool enable_path_compression = true)
-        : DisjointSetsCrtp(n, enable_merge_by_size, enable_path_compression) {}
+    Partition(int n = 0) : DisjointSetsCrtp(n) {}
 
     MOCK_METHOD(void, OnMakeSingleton, ());
     MOCK_METHOD(void, OnMergeSets, (int, int));
