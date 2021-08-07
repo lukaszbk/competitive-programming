@@ -27,13 +27,13 @@ namespace cpl {
 // 2) Merge by Size
 //    When we call MergeSets(a, b), we always attach the representative of the
 //    smaller subset to the representative of the larger subset. This guarantees
-//    that height of all trees in the forest is at most O(log n).
+//    that height of all trees in the forest is at most O(log(n)).
 //
 // If both optimizations are enabled, then the amortized cost of each operation
 // is O(alpha(n)). alpha(n) is the inverse Ackermann function, which grows very
 // slowly (it doesn't exceed 4 for all n < 10^600).
 // If only one optimization is enabled, then the amortized cost of each
-// operation is at most O(log n).
+// operation is at most O(log(n)).
 //
 // This class uses CRTP (Curiously Recuring Template Pattern) to implement
 // static polymorphism.

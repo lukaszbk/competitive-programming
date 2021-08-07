@@ -25,7 +25,7 @@ class KruskalHooks {
   }
 
   // This hook is called right before the algorithm starts iterating over
-  // the sorted collection edges.
+  // the sorted collection of edges.
   void OnStartProcessingEdges(ConnectedComponents* components) {
     assert(components != nullptr);
     components_ = components;
@@ -46,6 +46,8 @@ class KruskalHooks {
 
   template <class G, class H>
   friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
+  template <class G, class H>
+  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&&);
 
   ConnectedComponents* components_ = nullptr;
 };
@@ -60,16 +62,21 @@ class PrimHooks {
 
   template <class G, class H>
   friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
+  template <class G, class H>
+  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&&);
 };
 
 namespace internal {
 
-// Finds the minimum spanning tree of the specified graph using Kruskal's
-// algorithm.
+// Finds the minimum spanning tree of the specified *undirected* graph using
+// Kruskal's algorithm.
 //
 // Arguments:
 //  - graph: The graph to find the minimum spanning tree for.
-//  - hooks: Kruskal's algorithm hooks for customizing the procedure.
+//           Note: Conceptually, Kruskal's algorithm works only for undirected
+//           graph. However, this implementation works fine even if the given
+//           graph is directed.
+//  - hooks: Kruskal's algorithm hooks.
 //
 // Complexity:
 //  - Time:  O(m log(m))
@@ -95,12 +102,12 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
   return result;
 }
 
-// Finds the minimum spanning tree of the specified graph using Prim's
-// algorithm.
+// Finds the minimum spanning tree of the specified *undirected* graph using
+// Prim's algorithm.
 //
 // Arguments:
-//  - graph: The graph to find the minimum spanning tree for.
-//  - hooks: Prim's algorithm hooks for customizing the procedure.
+//  - graph: The *undirected* graph to find the minimum spanning tree for.
+//  - hooks: Prim's algorithm hooks.
 //
 // Complexity:
 //  - Time:  O(m log(n))
@@ -122,9 +129,14 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
 }
 
 template <class Graph, class Hooks = KruskalHooks<Graph>>
+std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
+                                                          Hooks&& hooks) {
+  return internal::FindMinimumSpanningTree(graph, hooks, typename Hooks::Tag());
+}
+
+template <class Graph, class Hooks = KruskalHooks<Graph>>
 std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph) {
-  Hooks hooks;
-  return FindMinimumSpanningTree(graph, hooks);
+  return FindMinimumSpanningTree(graph, Hooks());
 }
 
 }  // namespace cpl

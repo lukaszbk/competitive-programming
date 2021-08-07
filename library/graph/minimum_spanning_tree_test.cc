@@ -95,4 +95,47 @@ TEST_F(FindMstTest, KruskalHooksWork) {
   }
 }
 
+class CustomLessThanOperatorTest : public ::testing::Test {
+ public:
+  struct EdgeAttributes {
+    int weight;
+  };
+
+  using TestGraph = Graph<EdgeList<EdgeAttributes>>;
+  using Edge = TestGraph::Edge;
+};
+
+// Operator == is necessary for gtest matchers to work with type Edge.
+bool operator==(const CustomLessThanOperatorTest::Edge& lhs,
+                const CustomLessThanOperatorTest::Edge& rhs) {
+  return std::tie(lhs.source, lhs.target, lhs.weight) ==
+         std::tie(rhs.source, rhs.target, rhs.weight);
+}
+
+// Operator << is necessary for gtest to print edges nicely.
+std::ostream& operator<<(std::ostream& os,
+                         const CustomLessThanOperatorTest::Edge& edge) {
+  os << "(" << edge.source << ", " << edge.target << ", " << edge.weight << ")";
+  return os;
+}
+
+TEST_F(CustomLessThanOperatorTest, KruskalAlgorithmWorks) {
+  TestGraph graph;
+  graph.AddEdge(1, 2, {weight : 3});
+  graph.AddEdge(2, 5, {weight : 6});
+  graph.AddEdge(5, 1, {weight : 5});
+
+  struct Hooks : public KruskalHooks<TestGraph> {
+    void SortEdges(TestGraph& graph) const {
+      stable_sort(graph.edges().begin(), graph.edges().end(),
+                  [](const EdgeAttributes& lhs, const EdgeAttributes& rhs) {
+                    return lhs.weight < rhs.weight;
+                  });
+    }
+  };
+
+  ASSERT_THAT(FindMinimumSpanningTree(graph, Hooks()),
+              UnorderedElementsAreArray({Edge{1, 2, {3}}, Edge{5, 1, {5}}}));
+}
+
 }  // namespace cpl
