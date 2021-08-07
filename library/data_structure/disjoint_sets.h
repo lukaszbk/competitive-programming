@@ -6,7 +6,7 @@
 
 namespace cpl {
 
-// A DisjointSets represents a partition of {0, 1, 2, ..., n} set.
+// A DisjointSets represents a partition of {0, 1, 2, ..., n-1} set.
 //
 // Partition of a set is grouping of its elements into, non-empty,
 // non-overlapping subsets, in such a way that every element is included in
@@ -64,10 +64,12 @@ class DisjointSetsCrtp {
   //  - Time:  Refer to the class description for details
   //  - Space: O(1)
   int MergeSets(int a, int b) {
+    bool merge_by_size_ = false;
     if (kEnableMergeBySize_ && size(a) > size(b)) {
+      merge_by_size_ = true;
       std::swap(a, b);
     }
-    hooks()->OnMergeSets(a, b);
+    hooks()->OnMergeSets(a, b, merge_by_size_);
     a = Find(a);
     b = Find(b);
     parent_or_size_[b] += parent_or_size_[a];
@@ -124,7 +126,10 @@ class DisjointSetsCrtp {
   void OnMakeSingleton() {}
 
   // This hook is called right before two specified subsets are merged.
-  void OnMergeSets(int element, int parent) {}
+  //
+  // MergeSubsets(a, b) and size(a) <= size(b)  => OnMergeSubsets(a, b, false)
+  // MergeSubsets(a, b) and size(a) > size(b)   => OnMergeSubsets(b, a, true)
+  void OnMergeSets(int element, int parent, bool merge_by_size_) {}
 
   // This hook is called right before a path from element to root is compressed.
   void OnCompressPath(int element, int root) {}

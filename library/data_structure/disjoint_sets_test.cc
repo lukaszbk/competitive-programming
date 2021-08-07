@@ -155,7 +155,7 @@ TEST(DisjointSets, HooksAreCalledAsExpected) {
     Partition(int n = 0) : DisjointSetsCrtp(n) {}
 
     MOCK_METHOD(void, OnMakeSingleton, ());
-    MOCK_METHOD(void, OnMergeSets, (int, int));
+    MOCK_METHOD(void, OnMergeSets, (int, int, bool));
     MOCK_METHOD(void, OnCompressPath, (int, int));
   };
 
@@ -167,14 +167,20 @@ TEST(DisjointSets, HooksAreCalledAsExpected) {
     EXPECT_CALL(partition, OnMakeSingleton()).Times(1);
     ASSERT_EQ(3, partition.MakeSingleton());
 
-    EXPECT_CALL(partition, OnMergeSets(0, 1)).Times(1);
+    EXPECT_CALL(partition, OnMergeSets(0, 1, false)).Times(1);
     ASSERT_EQ(1, partition.MergeSets(0, 1));
 
-    EXPECT_CALL(partition, OnMergeSets(2, 3)).Times(1);
+    EXPECT_CALL(partition, OnMergeSets(2, 3, false)).Times(1);
     ASSERT_EQ(3, partition.MergeSets(2, 3));
 
-    EXPECT_CALL(partition, OnMergeSets(0, 2)).Times(1);
-    ASSERT_EQ(3, partition.MergeSets(0, 2));
+    EXPECT_CALL(partition, OnMakeSingleton()).Times(1);
+    ASSERT_EQ(4, partition.MakeSingleton());
+
+    EXPECT_CALL(partition, OnMergeSets(4, 3, true)).Times(1);
+    ASSERT_EQ(3, partition.MergeSets(3, 4));
+
+    EXPECT_CALL(partition, OnMergeSets(0, 2, true)).Times(1);
+    ASSERT_EQ(3, partition.MergeSets(2, 0));
 
     EXPECT_CALL(partition, OnCompressPath(0, 3));
     ASSERT_EQ(3, partition.Find(0));
