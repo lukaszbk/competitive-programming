@@ -65,22 +65,22 @@ TEST_F(FindMstTest, KruskalAlgorithmWorks) {
 }
 
 TEST_F(FindMstTest, KruskalHooksWork) {
-  class TestKruskalHooks : public KruskalHooks<TestGraph> {
+  class Hooks : public KruskalHooksCrtp<TestGraph, Hooks> {
    public:
-    void SortEdges(TestGraph& graph) const {
-      stable_sort(graph.edges().begin(), graph.edges().end());
+    void SortEdges() {
+      stable_sort(graph_->edges().begin(), graph_->edges().end());
     }
 
-    MOCK_METHOD(void, OnStartProcessingEdges, (ConnectedComponents*));
+    MOCK_METHOD(void, OnSetUp, ());
     MOCK_METHOD(void, OnProcessMstEdge, (const Edge&));
     MOCK_METHOD(void, OnProcessNonMstEdge, (const Edge&));
-    MOCK_METHOD(void, OnFinishProcessingEdges, ());
+    MOCK_METHOD(void, OnTearDown, ());
   };
 
   {
     InSequence s;
-    TestKruskalHooks hooks;
-    EXPECT_CALL(hooks, OnStartProcessingEdges(_)).Times(1);
+    Hooks hooks;
+    EXPECT_CALL(hooks, OnSetUp()).Times(1);
     EXPECT_CALL(hooks, OnProcessMstEdge(Edge{6, 5, {2}}));
     EXPECT_CALL(hooks, OnProcessMstEdge(Edge{1, 2, {3}}));
     EXPECT_CALL(hooks, OnProcessMstEdge(Edge{3, 6, {3}}));
@@ -89,7 +89,7 @@ TEST_F(FindMstTest, KruskalHooksWork) {
     EXPECT_CALL(hooks, OnProcessNonMstEdge(Edge{2, 5, {6}}));
     EXPECT_CALL(hooks, OnProcessMstEdge(Edge{4, 6, {7}}));
     EXPECT_CALL(hooks, OnProcessNonMstEdge(Edge{3, 4, {9}}));
-    EXPECT_CALL(hooks, OnFinishProcessingEdges()).Times(1);
+    EXPECT_CALL(hooks, OnTearDown()).Times(1);
     ASSERT_THAT(FindMinimumSpanningTree(graph_, hooks),
                 UnorderedElementsAreArray(mst_));
   }
@@ -125,16 +125,17 @@ TEST_F(CustomLessThanOperatorTest, KruskalAlgorithmWorks) {
   graph.AddEdge(2, 5, {weight : 6});
   graph.AddEdge(5, 1, {weight : 5});
 
-  struct Hooks : public KruskalHooks<TestGraph> {
-    void SortEdges(TestGraph& graph) const {
-      stable_sort(graph.edges().begin(), graph.edges().end(),
+  struct Hooks : public KruskalHooksCrtp<TestGraph, Hooks> {
+    void SortEdges() {
+      stable_sort(graph_->edges().begin(), graph_->edges().end(),
                   [](const EdgeAttributes& lhs, const EdgeAttributes& rhs) {
                     return lhs.weight < rhs.weight;
                   });
     }
   };
 
-  ASSERT_THAT(FindMinimumSpanningTree(graph, Hooks()),
+  Hooks hooks;
+  ASSERT_THAT(FindMinimumSpanningTree(graph, hooks),
               UnorderedElementsAreArray({Edge{1, 2, {3}}, Edge{5, 1, {5}}}));
 }
 

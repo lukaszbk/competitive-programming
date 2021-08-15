@@ -9,64 +9,9 @@
 
 namespace cpl {
 
-struct KruskalAlgorithmTag {};
-struct PrimAlgorithmTag {};
-
-template <class Graph>
-class KruskalHooks {
- public:
-  using Edge = typename Graph::Edge;
-  using ConnectedComponents = DisjointSets;
-
-  // This hooks is called at the beginning of the algorithm to sort graph edges
-  // by their weight.
-  void SortEdges(Graph& graph) const {
-    sort(graph.edges().begin(), graph.edges().end());
-  }
-
-  // This hook is called right before the algorithm starts iterating over
-  // the sorted collection of edges.
-  void OnStartProcessingEdges(ConnectedComponents* components) {
-    assert(components != nullptr);
-    components_ = components;
-  }
-
-  // This hook is called every time a new MST edge is found.
-  void OnProcessMstEdge(const Edge& edge) {}
-
-  // This hook os called every time a non-MST edge is encountered.
-  void OnProcessNonMstEdge(const Edge& edge) {}
-
-  // This hook is called right after the algorithm finishes iterating over
-  // the sorted collection edges.
-  void OnFinishProcessingEdges() { components_ = nullptr; }
-
- protected:
-  using Tag = KruskalAlgorithmTag;
-
-  template <class G, class H>
-  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
-  template <class G, class H>
-  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&&);
-
-  ConnectedComponents* components_ = nullptr;
-};
-
-template <class Graph>
-class PrimHooks {
- public:
-  // TODO(lukaszbk)
-
- private:
-  using Tag = PrimAlgorithmTag;
-
-  template <class G, class H>
-  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
-  template <class G, class H>
-  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&&);
-};
-
 namespace internal {
+
+struct KruskalAlgorithmTag {};
 
 // Finds the minimum spanning tree of the specified *undirected* graph using
 // Kruskal's algorithm.
@@ -86,9 +31,9 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
                                                           Hooks& hooks,
                                                           KruskalAlgorithmTag) {
   std::vector<typename Graph::Edge> result;
-  hooks.SortEdges(graph);
-  typename Hooks::ConnectedComponents components(graph.vertex_count());
-  hooks.OnStartProcessingEdges(&components);
+  auto components = hooks.MakeDisjointSets(graph.vertex_count());
+  hooks.SetUp(&graph, &components);
+  hooks.SortEdges();
   for (const auto& edge : graph.edges()) {
     if (components.Find(edge.source) != components.Find(edge.target)) {
       result.push_back(edge);
@@ -98,9 +43,74 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
       hooks.OnProcessNonMstEdge(edge);
     }
   }
-  hooks.OnFinishProcessingEdges();
+  hooks.TearDown();
   return result;
 }
+
+}  // namespace internal
+
+// KruskalHooks represents hooks for customizing Kruskal's algorithm execution.
+//
+// This class uses CRTP (Curiously Recuring Template Pattern) to implement
+// static polymorphism.
+template <class Graph, class Implementation>
+class KruskalHooksCrtp {
+ protected:
+  using Edge = typename Graph::Edge;
+
+  DisjointSets MakeDisjointSets(int vertex_count) const {
+    return DisjointSets(vertex_count);
+  }
+
+  // This hook is called right before the algorithm starts (after the setup).
+  void OnSetUp() {}
+
+  // This hooks is called at the beginning of the algorithm to sort graph edges.
+  void SortEdges() { sort(graph_->edges().begin(), graph_->edges().end()); }
+
+  // This hook is called every time a new MST edge is found.
+  void OnProcessMstEdge(const Edge& edge) {}
+
+  // This hook is called every time a non-MST edge is encountered.
+  void OnProcessNonMstEdge(const Edge& edge) {}
+
+  // This hook is called right after the algorithm finishes.
+  void OnTearDown() {}
+
+  Graph* graph_ = nullptr;
+  DisjointSets* components_ = nullptr;
+
+ private:
+  using Tag = internal::KruskalAlgorithmTag;
+
+  void SetUp(Graph* graph, DisjointSets* components) {
+    assert(graph != nullptr);
+    assert(components != nullptr);
+    graph_ = graph;
+    components_ = components;
+    hooks()->OnSetUp();
+  }
+
+  void TearDown() {
+    hooks()->OnTearDown();
+    components_ = nullptr;
+  }
+
+  Implementation* hooks() { return static_cast<Implementation*>(this); }
+
+  template <class G, class H>
+  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
+  template <class G, class H>
+  friend std::vector<typename G::Edge> internal::FindMinimumSpanningTree(
+      G&, H&, internal::KruskalAlgorithmTag);
+};
+
+template <class G>
+class KruskalHooks final : public KruskalHooksCrtp<G, KruskalHooks<G>> {};
+
+namespace internal {
+
+struct PrimAlgorithmTag {};
 
 // Finds the minimum spanning tree of the specified *undirected* graph using
 // Prim's algorithm.
@@ -122,6 +132,22 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
 
 }  // namespace internal
 
+// PrimHooks represents hooks for customizing Prim's algorithm execution.
+template <class Graph>
+class PrimHooks {
+ public:
+  // TODO(lukaszbk)
+
+ private:
+  using Tag = internal::PrimAlgorithmTag;
+
+  template <class G, class H>
+  friend std::vector<typename G::Edge> FindMinimumSpanningTree(G&, H&);
+  template <class G, class H>
+  friend std::vector<typename G::Edge> internal::FindMinimumSpanningTree(
+      G&, H&, internal::PrimAlgorithmTag);
+};
+
 template <class Graph, class Hooks = KruskalHooks<Graph>>
 std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
                                                           Hooks& hooks) {
@@ -129,14 +155,9 @@ std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
 }
 
 template <class Graph, class Hooks = KruskalHooks<Graph>>
-std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph,
-                                                          Hooks&& hooks) {
-  return internal::FindMinimumSpanningTree(graph, hooks, typename Hooks::Tag());
-}
-
-template <class Graph, class Hooks = KruskalHooks<Graph>>
 std::vector<typename Graph::Edge> FindMinimumSpanningTree(Graph& graph) {
-  return FindMinimumSpanningTree(graph, Hooks());
+  Hooks hooks;
+  return FindMinimumSpanningTree(graph, hooks);
 }
 
 }  // namespace cpl
